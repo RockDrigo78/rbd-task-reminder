@@ -18,6 +18,21 @@ class AppLocalizationsUk extends AppLocalizations {
   String get active => 'Активні';
 
   @override
+  String get finished => 'Завершено';
+
+  @override
+  String get taskGroupToday => 'Сьогодні';
+
+  @override
+  String get taskGroupTomorrow => 'Завтра';
+
+  @override
+  String get taskGroupUpcoming => 'Майбутні';
+
+  @override
+  String get taskGroupNoReminder => 'Без нагадування';
+
+  @override
   String get completed => 'Виконані';
 
   @override
@@ -42,6 +57,9 @@ class AppLocalizationsUk extends AppLocalizations {
   String get titleRequired => 'Назва обов\'язкова';
 
   @override
+  String get saveFailed => 'Не вдалося зберегти завдання. Спробуйте ще раз.';
+
+  @override
   String get notesOptional => 'Нотатки (необов\'язково)';
 
   @override
@@ -59,6 +77,13 @@ class AppLocalizationsUk extends AppLocalizations {
   @override
   String get defaultTomorrowReminderDescription =>
       'Час за замовчуванням для швидкого варіанту «завтра» під час додавання нагадування.';
+
+  @override
+  String get use24HourTime => '24-годинний формат';
+
+  @override
+  String get use24HourTimeDescription =>
+      'Використовувати 24-годинний формат замість AM/PM для вибору часу та нагадувань.';
 
   @override
   String get pickDateAndTime => 'Оберіть дату та час';

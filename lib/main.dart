@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -5,7 +7,6 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'app.dart';
 import 'providers/reminder_action_provider.dart';
 import 'providers/service_providers.dart';
-import 'providers/todo_provider.dart';
 import 'repositories/settings_repository.dart';
 import 'repositories/todo_repository.dart';
 import 'services/notification_service.dart';
@@ -29,19 +30,17 @@ Future<void> main() async {
     ),
   );
 
-  await notificationService.init(
-    onTap: (todoId) {
-      container.read(reminderActionProvider.notifier).show(todoId);
-    },
-  );
-
-  final launchDetails =
-      await notificationService.getLaunchNotificationTodoId();
-  if (launchDetails != null) {
-    container.read(reminderActionProvider.notifier).show(launchDetails);
+  try {
+    await notificationService
+        .init(
+          onTap: (todoId) {
+            container.read(reminderActionProvider.notifier).show(todoId);
+          },
+        )
+        .timeout(const Duration(seconds: 10));
+  } catch (error, stackTrace) {
+    debugPrint('Notification init failed: $error\n$stackTrace');
   }
-
-  await container.read(todosProvider.notifier).rescheduleAllReminders();
 
   runApp(
     UncontrolledProviderScope(

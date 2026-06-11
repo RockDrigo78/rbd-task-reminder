@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 
@@ -26,13 +27,18 @@ class TodoNotifier extends StateNotifier<List<Todo>> {
   final ReminderScheduler _scheduler;
 
   void loadTodos() {
-    state = _repository.getAll();
+    try {
+      state = _repository.getAll();
+    } catch (error, stackTrace) {
+      debugPrint('Failed to load todos: $error\n$stackTrace');
+      state = [];
+    }
   }
 
   Future<void> rescheduleAllReminders() async {
-    await _scheduler.rescheduleAll(
-      state.where((todo) => !todo.isCompleted).toList(),
-    );
+    for (final todo in state.where((todo) => !todo.isCompleted)) {
+      await _scheduleReminderSafely(todo);
+    }
   }
 
   Todo? getById(String id) {
@@ -55,15 +61,31 @@ class TodoNotifier extends StateNotifier<List<Todo>> {
     );
 
     await _repository.save(todo);
-    await _scheduler.schedule(todo);
     loadTodos();
+    await _scheduleReminderSafely(todo);
   }
 
   Future<void> updateTodo(Todo todo) async {
     final updatedTodo = todo.copyWith(updatedAt: DateTime.now());
     await _repository.save(updatedTodo);
-    await _scheduler.schedule(updatedTodo);
     loadTodos();
+    await _scheduleReminderSafely(updatedTodo);
+  }
+
+  Future<void> _scheduleReminderSafely(Todo todo) async {
+    try {
+      await _scheduler.schedule(todo);
+    } catch (error, stackTrace) {
+      debugPrint('Failed to schedule reminder: $error\n$stackTrace');
+    }
+  }
+
+  Future<void> _cancelReminderSafely(String todoId) async {
+    try {
+      await _scheduler.cancel(todoId);
+    } catch (error, stackTrace) {
+      debugPrint('Failed to cancel reminder: $error\n$stackTrace');
+    }
   }
 
   Future<void> toggleComplete(String id) async {
@@ -78,16 +100,16 @@ class TodoNotifier extends StateNotifier<List<Todo>> {
     );
 
     await _repository.save(updatedTodo);
-    if (updatedTodo.isCompleted) {
-      await _scheduler.cancel(id);
-    } else {
-      await _scheduler.schedule(updatedTodo);
-    }
     loadTodos();
+    if (updatedTodo.isCompleted) {
+      await _cancelReminderSafely(id);
+    } else {
+      await _scheduleReminderSafely(updatedTodo);
+    }
   }
 
   Future<void> deleteTodo(String id) async {
-    await _scheduler.cancel(id);
+    await _cancelReminderSafely(id);
     await _repository.delete(id);
     loadTodos();
   }
@@ -104,8 +126,8 @@ class TodoNotifier extends StateNotifier<List<Todo>> {
     );
 
     await _repository.save(updatedTodo);
-    await _scheduler.cancel(id);
     loadTodos();
+    await _cancelReminderSafely(id);
   }
 
   Future<void> postponeReminder(String id, DateTime newReminderAt) async {
@@ -120,7 +142,7 @@ class TodoNotifier extends StateNotifier<List<Todo>> {
     );
 
     await _repository.save(updatedTodo);
-    await _scheduler.schedule(updatedTodo);
     loadTodos();
+    await _scheduleReminderSafely(updatedTodo);
   }
 }

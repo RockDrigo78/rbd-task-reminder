@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../models/app_settings.dart';
@@ -16,9 +17,18 @@ final settingsProvider =
 });
 
 class SettingsNotifier extends StateNotifier<AppSettings> {
-  SettingsNotifier(this._repository) : super(_repository.getSettings());
+  SettingsNotifier(this._repository) : super(_loadSettings(_repository));
 
   final SettingsRepository _repository;
+
+  static AppSettings _loadSettings(SettingsRepository repository) {
+    try {
+      return repository.getSettings();
+    } catch (error, stackTrace) {
+      debugPrint('Failed to load settings: $error\n$stackTrace');
+      return AppSettings.defaults();
+    }
+  }
 
   Future<void> updatePresets(List<PostponePreset> presets) async {
     final updatedSettings = state.copyWith(postponePresets: presets);
@@ -74,6 +84,13 @@ class SettingsNotifier extends StateNotifier<AppSettings> {
       defaultTomorrowReminderHour: hour,
       defaultTomorrowReminderMinute: minute,
     );
+    state = updatedSettings;
+    await _repository.saveSettings(updatedSettings);
+  }
+
+  Future<void> updateUse24HourTimeFormat(bool use24HourTimeFormat) async {
+    final updatedSettings =
+        state.copyWith(use24HourTimeFormat: use24HourTimeFormat);
     state = updatedSettings;
     await _repository.saveSettings(updatedSettings);
   }

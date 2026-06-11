@@ -18,9 +18,13 @@ String formatReminderClockTime({
   required int hour,
   required int minute,
   required String locale,
+  required bool use24HourFormat,
 }) {
   final sample = DateTime(2000, 1, 1, hour, minute);
-  return DateFormat.jm(locale).format(sample);
+  if (use24HourFormat) {
+    return DateFormat('HH:mm', locale).format(sample);
+  }
+  return DateFormat('h:mm a', 'en_US').format(sample);
 }
 
 bool isSameReminderMinute(DateTime first, DateTime second) {

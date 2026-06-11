@@ -130,6 +130,36 @@ abstract class AppLocalizations {
   /// **'Active'**
   String get active;
 
+  /// No description provided for @finished.
+  ///
+  /// In en, this message translates to:
+  /// **'Finished'**
+  String get finished;
+
+  /// No description provided for @taskGroupToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get taskGroupToday;
+
+  /// No description provided for @taskGroupTomorrow.
+  ///
+  /// In en, this message translates to:
+  /// **'Tomorrow'**
+  String get taskGroupTomorrow;
+
+  /// No description provided for @taskGroupUpcoming.
+  ///
+  /// In en, this message translates to:
+  /// **'Upcoming'**
+  String get taskGroupUpcoming;
+
+  /// No description provided for @taskGroupNoReminder.
+  ///
+  /// In en, this message translates to:
+  /// **'No reminder'**
+  String get taskGroupNoReminder;
+
   /// No description provided for @completed.
   ///
   /// In en, this message translates to:
@@ -178,6 +208,12 @@ abstract class AppLocalizations {
   /// **'Title is required'**
   String get titleRequired;
 
+  /// No description provided for @saveFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not save the task. Please try again.'**
+  String get saveFailed;
+
   /// No description provided for @notesOptional.
   ///
   /// In en, this message translates to:
@@ -213,6 +249,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Default time for the quick tomorrow option when adding a reminder.'**
   String get defaultTomorrowReminderDescription;
+
+  /// No description provided for @use24HourTime.
+  ///
+  /// In en, this message translates to:
+  /// **'24-hour time'**
+  String get use24HourTime;
+
+  /// No description provided for @use24HourTimeDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Use 24-hour format instead of AM/PM for time pickers and reminders.'**
+  String get use24HourTimeDescription;
 
   /// No description provided for @pickDateAndTime.
   ///

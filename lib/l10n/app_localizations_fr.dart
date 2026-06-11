@@ -18,6 +18,21 @@ class AppLocalizationsFr extends AppLocalizations {
   String get active => 'Actives';
 
   @override
+  String get finished => 'Terminé';
+
+  @override
+  String get taskGroupToday => 'Aujourd\'hui';
+
+  @override
+  String get taskGroupTomorrow => 'Demain';
+
+  @override
+  String get taskGroupUpcoming => 'À venir';
+
+  @override
+  String get taskGroupNoReminder => 'Sans rappel';
+
+  @override
   String get completed => 'Terminées';
 
   @override
@@ -43,6 +58,9 @@ class AppLocalizationsFr extends AppLocalizations {
   String get titleRequired => 'Le titre est obligatoire';
 
   @override
+  String get saveFailed => 'Impossible d\'enregistrer la tâche. Réessayez.';
+
+  @override
   String get notesOptional => 'Notes (facultatif)';
 
   @override
@@ -60,6 +78,13 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get defaultTomorrowReminderDescription =>
       'Heure par défaut pour l\'option rapide demain lors de l\'ajout d\'un rappel.';
+
+  @override
+  String get use24HourTime => 'Format 24 heures';
+
+  @override
+  String get use24HourTimeDescription =>
+      'Utiliser le format 24 heures au lieu de AM/PM pour les sélecteurs d\'heure et les rappels.';
 
   @override
   String get pickDateAndTime => 'Choisir la date et l\'heure';

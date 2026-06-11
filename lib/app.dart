@@ -6,7 +6,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'l10n/app_localizations.dart';
 import 'l10n/l10n_helpers.dart';
+import 'models/todo.dart';
 import 'providers/reminder_action_provider.dart';
+import 'providers/service_providers.dart';
 import 'providers/settings_provider.dart';
 import 'providers/todo_provider.dart';
 import 'screens/home_screen.dart';
@@ -32,6 +34,31 @@ class _TaskReminderAppState extends ConsumerState<TaskReminderApp>
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _startDueReminderChecks();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      unawaited(_bootstrapNotifications());
+    });
+  }
+
+  Future<void> _bootstrapNotifications() async {
+    try {
+      final notificationService = ref.read(notificationServiceProvider);
+      await notificationService.requestPermissions();
+
+      final hasExactAlarms = await notificationService.canScheduleExactAlarms();
+      if (!hasExactAlarms) {
+        unawaited(notificationService.openExactAlarmSettings());
+      }
+
+      final launchTodoId =
+          await notificationService.getLaunchNotificationTodoId();
+      if (launchTodoId != null) {
+        ref.read(reminderActionProvider.notifier).show(launchTodoId);
+      }
+
+      await ref.read(todosProvider.notifier).rescheduleAllReminders();
+    } catch (error, stackTrace) {
+      debugPrint('Notification bootstrap failed: $error\n$stackTrace');
+    }
   }
 
   @override
@@ -59,9 +86,12 @@ class _TaskReminderAppState extends ConsumerState<TaskReminderApp>
   }
 
   void _checkDueReminders() {
+    if (WidgetsBinding.instance.lifecycleState != AppLifecycleState.resumed) {
+      return;
+    }
+
     final now = DateTime.now();
     final todos = ref.read(todosProvider);
-    final pendingTodoId = ref.read(reminderActionProvider);
 
     for (final todo in todos) {
       if (todo.isCompleted || todo.reminderAt == null) {
@@ -72,14 +102,27 @@ class _TaskReminderAppState extends ConsumerState<TaskReminderApp>
         if (triggeredReminderIds.contains(todo.id)) {
           continue;
         }
-        if (pendingTodoId == todo.id) {
-          continue;
-        }
 
         triggeredReminderIds.add(todo.id);
-        ref.read(reminderActionProvider.notifier).show(todo.id);
+        unawaited(_showDueReminderNotification(todo));
         break;
       }
+    }
+  }
+
+  Future<void> _showDueReminderNotification(Todo todo) async {
+    try {
+      final notificationTitle = localizationsForLanguageCode(
+        ref.read(settingsProvider).languageCode,
+      ).appTitle;
+      await ref.read(notificationServiceProvider).showReminderNow(
+            todo,
+            notificationTitle: notificationTitle,
+          );
+    } catch (error, stackTrace) {
+      debugPrint(
+        'Failed to show due reminder notification: $error\n$stackTrace',
+      );
     }
   }
 

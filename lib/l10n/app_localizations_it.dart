@@ -18,6 +18,21 @@ class AppLocalizationsIt extends AppLocalizations {
   String get active => 'Attive';
 
   @override
+  String get finished => 'Completato';
+
+  @override
+  String get taskGroupToday => 'Oggi';
+
+  @override
+  String get taskGroupTomorrow => 'Domani';
+
+  @override
+  String get taskGroupUpcoming => 'In arrivo';
+
+  @override
+  String get taskGroupNoReminder => 'Nessun promemoria';
+
+  @override
   String get completed => 'Completate';
 
   @override
@@ -43,6 +58,9 @@ class AppLocalizationsIt extends AppLocalizations {
   String get titleRequired => 'Il titolo è obbligatorio';
 
   @override
+  String get saveFailed => 'Impossibile salvare l\'attività. Riprova.';
+
+  @override
   String get notesOptional => 'Note (facoltativo)';
 
   @override
@@ -60,6 +78,13 @@ class AppLocalizationsIt extends AppLocalizations {
   @override
   String get defaultTomorrowReminderDescription =>
       'Ora predefinita per l\'opzione rapida domani quando aggiungi un promemoria.';
+
+  @override
+  String get use24HourTime => 'Formato 24 ore';
+
+  @override
+  String get use24HourTimeDescription =>
+      'Usa il formato 24 ore invece di AM/PM per orari e promemoria.';
 
   @override
   String get pickDateAndTime => 'Scegli data e ora';

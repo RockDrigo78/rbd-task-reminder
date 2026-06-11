@@ -18,6 +18,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String get active => 'Active';
 
   @override
+  String get finished => 'Finished';
+
+  @override
+  String get taskGroupToday => 'Today';
+
+  @override
+  String get taskGroupTomorrow => 'Tomorrow';
+
+  @override
+  String get taskGroupUpcoming => 'Upcoming';
+
+  @override
+  String get taskGroupNoReminder => 'No reminder';
+
+  @override
   String get completed => 'Completed';
 
   @override
@@ -42,6 +57,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get titleRequired => 'Title is required';
 
   @override
+  String get saveFailed => 'Could not save the task. Please try again.';
+
+  @override
   String get notesOptional => 'Notes (optional)';
 
   @override
@@ -59,6 +77,13 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get defaultTomorrowReminderDescription =>
       'Default time for the quick tomorrow option when adding a reminder.';
+
+  @override
+  String get use24HourTime => '24-hour time';
+
+  @override
+  String get use24HourTimeDescription =>
+      'Use 24-hour format instead of AM/PM for time pickers and reminders.';
 
   @override
   String get pickDateAndTime => 'Pick date and time';

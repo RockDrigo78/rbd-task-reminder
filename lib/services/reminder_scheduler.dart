@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import '../models/todo.dart';
 import 'notification_service.dart';
 
@@ -24,7 +25,13 @@ class ReminderScheduler {
 
   Future<void> rescheduleAll(List<Todo> todos) async {
     for (final todo in todos) {
-      await schedule(todo);
+      try {
+        await schedule(todo);
+      } catch (error, stackTrace) {
+        debugPrint(
+          'Failed to reschedule reminder for ${todo.id}: $error\n$stackTrace',
+        );
+      }
     }
   }
 }

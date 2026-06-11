@@ -9,6 +9,7 @@ import '../providers/reminder_action_provider.dart';
 import '../providers/settings_provider.dart';
 import '../providers/todo_provider.dart';
 import '../theme/app_colors.dart';
+import '../utils/time_picker_helpers.dart';
 import '../widgets/gradient_fab.dart';
 
 Future<void> showReminderActionBottomSheet({
@@ -87,11 +88,12 @@ class _ReminderActionSheetContentState
       return;
     }
 
-    final pickedTime = await showTimePicker(
+    final pickedTime = await showConfiguredTimePicker(
       context: context,
       initialTime: TimeOfDay.fromDateTime(
         now.add(const Duration(hours: 1)),
       ),
+      use24HourFormat: ref.read(settingsProvider).use24HourTimeFormat,
     );
 
     if (pickedTime == null) {

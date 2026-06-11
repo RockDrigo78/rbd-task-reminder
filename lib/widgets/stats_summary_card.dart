@@ -12,11 +12,13 @@ class StatsSummaryCard extends StatelessWidget {
     required this.activeCount,
     required this.completedCount,
     required this.activeLabel,
+    required this.finishedLabel,
   });
 
   final int activeCount;
   final int completedCount;
   final String activeLabel;
+  final String finishedLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -71,11 +73,22 @@ class StatsSummaryCard extends StatelessWidget {
                   backgroundColor: colorScheme.surfaceContainerHighest,
                 ),
                 child: Center(
-                  child: Text(
-                    '${(progress * 100).round()}%',
-                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                          fontWeight: FontWeight.w800,
-                        ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        '${(progress * 100).round()}%',
+                        style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                              fontWeight: FontWeight.w800,
+                            ),
+                      ),
+                      Text(
+                        finishedLabel.toLowerCase(),
+                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                              color: colorScheme.onSurfaceVariant,
+                            ),
+                      ),
+                    ],
                   ),
                 ),
               ),

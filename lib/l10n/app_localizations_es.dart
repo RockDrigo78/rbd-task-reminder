@@ -18,6 +18,21 @@ class AppLocalizationsEs extends AppLocalizations {
   String get active => 'Activas';
 
   @override
+  String get finished => 'Finalizado';
+
+  @override
+  String get taskGroupToday => 'Hoy';
+
+  @override
+  String get taskGroupTomorrow => 'Mañana';
+
+  @override
+  String get taskGroupUpcoming => 'Próximas';
+
+  @override
+  String get taskGroupNoReminder => 'Sin recordatorio';
+
+  @override
   String get completed => 'Completadas';
 
   @override
@@ -42,6 +57,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get titleRequired => 'El título es obligatorio';
 
   @override
+  String get saveFailed => 'No se pudo guardar la tarea. Inténtalo de nuevo.';
+
+  @override
   String get notesOptional => 'Notas (opcional)';
 
   @override
@@ -59,6 +77,13 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get defaultTomorrowReminderDescription =>
       'Hora predeterminada para la opción rápida de mañana al añadir un recordatorio.';
+
+  @override
+  String get use24HourTime => 'Formato 24 horas';
+
+  @override
+  String get use24HourTimeDescription =>
+      'Usar formato de 24 horas en lugar de AM/PM para horas y recordatorios.';
 
   @override
   String get pickDateAndTime => 'Elegir fecha y hora';

@@ -8,6 +8,7 @@ class AppSettings {
     this.themePreference = ThemePreference.system,
     this.defaultTomorrowReminderHour = 9,
     this.defaultTomorrowReminderMinute = 0,
+    this.use24HourTimeFormat = false,
   });
 
   final List<PostponePreset> postponePresets;
@@ -15,6 +16,7 @@ class AppSettings {
   final ThemePreference themePreference;
   final int defaultTomorrowReminderHour;
   final int defaultTomorrowReminderMinute;
+  final bool use24HourTimeFormat;
 
   AppSettings copyWith({
     List<PostponePreset>? postponePresets,
@@ -23,6 +25,7 @@ class AppSettings {
     ThemePreference? themePreference,
     int? defaultTomorrowReminderHour,
     int? defaultTomorrowReminderMinute,
+    bool? use24HourTimeFormat,
   }) {
     return AppSettings(
       postponePresets: postponePresets ?? this.postponePresets,
@@ -33,6 +36,7 @@ class AppSettings {
           defaultTomorrowReminderHour ?? this.defaultTomorrowReminderHour,
       defaultTomorrowReminderMinute:
           defaultTomorrowReminderMinute ?? this.defaultTomorrowReminderMinute,
+      use24HourTimeFormat: use24HourTimeFormat ?? this.use24HourTimeFormat,
     );
   }
 
@@ -44,6 +48,7 @@ class AppSettings {
       'themePreference': themePreference.storageValue,
       'defaultTomorrowReminderHour': defaultTomorrowReminderHour,
       'defaultTomorrowReminderMinute': defaultTomorrowReminderMinute,
+      'use24HourTimeFormat': use24HourTimeFormat,
     };
   }
 
@@ -63,6 +68,7 @@ class AppSettings {
           map['defaultTomorrowReminderHour'] as int? ?? 9,
       defaultTomorrowReminderMinute:
           map['defaultTomorrowReminderMinute'] as int? ?? 0,
+      use24HourTimeFormat: map['use24HourTimeFormat'] as bool? ?? false,
     );
   }
 

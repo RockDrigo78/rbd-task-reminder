@@ -18,6 +18,21 @@ class AppLocalizationsRu extends AppLocalizations {
   String get active => 'Активные';
 
   @override
+  String get finished => 'Завершено';
+
+  @override
+  String get taskGroupToday => 'Сегодня';
+
+  @override
+  String get taskGroupTomorrow => 'Завтра';
+
+  @override
+  String get taskGroupUpcoming => 'Предстоящие';
+
+  @override
+  String get taskGroupNoReminder => 'Без напоминания';
+
+  @override
   String get completed => 'Выполненные';
 
   @override
@@ -42,6 +57,9 @@ class AppLocalizationsRu extends AppLocalizations {
   String get titleRequired => 'Название обязательно';
 
   @override
+  String get saveFailed => 'Не удалось сохранить задачу. Попробуйте снова.';
+
+  @override
   String get notesOptional => 'Заметки (необязательно)';
 
   @override
@@ -59,6 +77,13 @@ class AppLocalizationsRu extends AppLocalizations {
   @override
   String get defaultTomorrowReminderDescription =>
       'Время по умолчанию для быстрого варианта «завтра» при добавлении напоминания.';
+
+  @override
+  String get use24HourTime => '24-часовой формат';
+
+  @override
+  String get use24HourTimeDescription =>
+      'Использовать 24-часовой формат вместо AM/PM для выбора времени и напоминаний.';
 
   @override
   String get pickDateAndTime => 'Выберите дату и время';

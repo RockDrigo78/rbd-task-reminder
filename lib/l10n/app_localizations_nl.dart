@@ -18,6 +18,21 @@ class AppLocalizationsNl extends AppLocalizations {
   String get active => 'Actief';
 
   @override
+  String get finished => 'Voltooid';
+
+  @override
+  String get taskGroupToday => 'Vandaag';
+
+  @override
+  String get taskGroupTomorrow => 'Morgen';
+
+  @override
+  String get taskGroupUpcoming => 'Komende';
+
+  @override
+  String get taskGroupNoReminder => 'Geen herinnering';
+
+  @override
   String get completed => 'Voltooid';
 
   @override
@@ -42,6 +57,10 @@ class AppLocalizationsNl extends AppLocalizations {
   String get titleRequired => 'Titel is verplicht';
 
   @override
+  String get saveFailed =>
+      'Taak kon niet worden opgeslagen. Probeer het opnieuw.';
+
+  @override
   String get notesOptional => 'Notities (optioneel)';
 
   @override
@@ -59,6 +78,13 @@ class AppLocalizationsNl extends AppLocalizations {
   @override
   String get defaultTomorrowReminderDescription =>
       'Standaardtijd voor de snelle morgen-optie bij het instellen van een herinnering.';
+
+  @override
+  String get use24HourTime => '24-uursnotatie';
+
+  @override
+  String get use24HourTimeDescription =>
+      'Gebruik 24-uursnotatie in plaats van AM/PM voor tijdkeuze en herinneringen.';
 
   @override
   String get pickDateAndTime => 'Kies datum en tijd';

@@ -3,8 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
 import '../l10n/app_localizations.dart';
+import '../models/todo.dart';
 import '../providers/todo_provider.dart';
-import '../widgets/app_footer.dart';
+import '../utils/todo_sorting.dart';
 import '../widgets/app_background.dart';
 import '../widgets/empty_state.dart';
 import '../widgets/gradient_fab.dart';
@@ -21,7 +22,7 @@ class HomeScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final localizations = AppLocalizations.of(context)!;
     final todos = ref.watch(todosProvider);
-    final activeTodos = todos.where((todo) => !todo.isCompleted).toList();
+    final groupedActiveTodos = groupActiveTodos(todos);
     final completedTodos = todos.where((todo) => todo.isCompleted).toList();
 
     return AppBackground(
@@ -36,12 +37,7 @@ class HomeScreen extends ConsumerWidget {
                     ),
                     const SliverFillRemaining(
                       hasScrollBody: false,
-                      child: Column(
-                        children: [
-                          Expanded(child: EmptyState()),
-                          AppFooter(),
-                        ],
-                      ),
+                      child: EmptyState(),
                     ),
                   ],
                 )
@@ -52,47 +48,21 @@ class HomeScreen extends ConsumerWidget {
                     ),
                     SliverToBoxAdapter(
                       child: StatsSummaryCard(
-                        activeCount: activeTodos.length,
+                        activeCount: groupedActiveTodos.today.length +
+                            groupedActiveTodos.tomorrow.length +
+                            groupedActiveTodos.later.length +
+                            groupedActiveTodos.withoutReminder.length,
                         completedCount: completedTodos.length,
                         activeLabel: localizations.active,
+                        finishedLabel: localizations.finished,
                       ),
                     ),
-                    if (activeTodos.isNotEmpty) ...[
-                      SliverToBoxAdapter(
-                        child: SectionHeader(
-                          title: localizations.active,
-                          trailing: '${activeTodos.length}',
-                        ),
-                      ),
-                      SliverList(
-                        delegate: SliverChildBuilderDelegate(
-                          (context, index) => TodoListItem(
-                            todo: activeTodos[index],
-                            onToggleComplete: () {
-                              ref
-                                  .read(todosProvider.notifier)
-                                  .toggleComplete(activeTodos[index].id);
-                            },
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute<void>(
-                                  builder: (_) => TodoFormScreen(
-                                    todoId: activeTodos[index].id,
-                                  ),
-                                ),
-                              );
-                            },
-                            onDelete: () {
-                              ref
-                                  .read(todosProvider.notifier)
-                                  .deleteTodo(activeTodos[index].id);
-                            },
-                          ),
-                          childCount: activeTodos.length,
-                        ),
-                      ),
-                    ],
+                    ..._buildActiveTodoSections(
+                      context: context,
+                      ref: ref,
+                      groupedActiveTodos: groupedActiveTodos,
+                      localizations: localizations,
+                    ),
                     if (completedTodos.isNotEmpty) ...[
                       SliverToBoxAdapter(
                         child: SectionHeader(
@@ -130,7 +100,6 @@ class HomeScreen extends ConsumerWidget {
                         ),
                       ),
                     ],
-                    const SliverToBoxAdapter(child: AppFooter()),
                     const SliverToBoxAdapter(child: SizedBox(height: 88)),
                   ],
                 ),
@@ -149,6 +118,65 @@ class HomeScreen extends ConsumerWidget {
       ),
     );
   }
+}
+
+List<Widget> _buildActiveTodoSections({
+  required BuildContext context,
+  required WidgetRef ref,
+  required GroupedActiveTodos groupedActiveTodos,
+  required AppLocalizations localizations,
+}) {
+  final sections = <({String title, List<Todo> todos})>[
+    (title: localizations.taskGroupToday, todos: groupedActiveTodos.today),
+    (
+      title: localizations.taskGroupTomorrow,
+      todos: groupedActiveTodos.tomorrow,
+    ),
+    (title: localizations.taskGroupUpcoming, todos: groupedActiveTodos.later),
+    (
+      title: localizations.taskGroupNoReminder,
+      todos: groupedActiveTodos.withoutReminder,
+    ),
+  ];
+
+  return sections
+      .where((section) => section.todos.isNotEmpty)
+      .expand((section) {
+        return [
+          SliverToBoxAdapter(
+            child: SectionHeader(
+              title: section.title,
+              trailing: '${section.todos.length}',
+            ),
+          ),
+          SliverList(
+            delegate: SliverChildBuilderDelegate(
+              (context, index) {
+                final todo = section.todos[index];
+                return TodoListItem(
+                  todo: todo,
+                  onToggleComplete: () {
+                    ref.read(todosProvider.notifier).toggleComplete(todo.id);
+                  },
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute<void>(
+                        builder: (_) => TodoFormScreen(todoId: todo.id),
+                      ),
+                    );
+                  },
+                  onDelete: () {
+                    ref.read(todosProvider.notifier).deleteTodo(todo.id);
+                  },
+                );
+              },
+              childCount: section.todos.length,
+            ),
+          ),
+        ];
+      })
+      .toList();
 }
 
 class _HomeHeader extends StatelessWidget {

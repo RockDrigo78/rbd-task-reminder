@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import 'app_colors.dart';
 
@@ -182,9 +181,8 @@ abstract final class AppTheme {
   }
 
   static TextTheme _textTheme(ColorScheme colorScheme, bool isDark) {
-    final base = GoogleFonts.plusJakartaSansTextTheme(
-      isDark ? ThemeData.dark().textTheme : ThemeData.light().textTheme,
-    );
+    final base =
+        isDark ? ThemeData.dark().textTheme : ThemeData.light().textTheme;
 
     return base.copyWith(
       headlineMedium: base.headlineMedium?.copyWith(

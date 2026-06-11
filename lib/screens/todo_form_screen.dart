@@ -5,7 +5,6 @@ import '../l10n/app_localizations.dart';
 import '../providers/service_providers.dart';
 import '../providers/todo_provider.dart';
 import '../widgets/app_background.dart';
-import '../widgets/app_footer.dart';
 import '../widgets/gradient_fab.dart';
 import '../widgets/reminder_picker_row.dart';
 
@@ -79,40 +78,54 @@ class _TodoFormScreenState extends ConsumerState<TodoFormScreen> {
       isSaving = true;
     });
 
-    if (reminderEnabled) {
-      final notificationService = ref.read(notificationServiceProvider);
-      await notificationService.requestPermissions();
-    }
+    var didPop = false;
 
-    final notifier = ref.read(todosProvider.notifier);
+    try {
+      if (reminderEnabled) {
+        final notificationService = ref.read(notificationServiceProvider);
+        await notificationService.requestPermissions();
+      }
 
-    if (isEditing) {
-      final existingTodo = notifier.getById(widget.todoId!);
-      if (existingTodo == null) {
+      final notifier = ref.read(todosProvider.notifier);
+
+      if (isEditing) {
+        final existingTodo = notifier.getById(widget.todoId!);
+        if (existingTodo == null) {
+          return;
+        }
+
+        final updatedTodo = existingTodo.copyWith(
+          title: title,
+          notes: notesController.text.trim(),
+          reminderAt: reminderEnabled ? reminderAt : null,
+          clearReminder: !reminderEnabled,
+        );
+
+        await notifier.updateTodo(updatedTodo);
+      } else {
+        await notifier.addTodo(
+          title: title,
+          notes: notesController.text.trim(),
+          reminderAt: reminderEnabled ? reminderAt : null,
+        );
+      }
+
+      if (mounted) {
+        Navigator.pop(context);
+        didPop = true;
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() {
+          errorMessage = localizations.saveFailed;
+        });
+      }
+    } finally {
+      if (mounted && !didPop) {
         setState(() {
           isSaving = false;
         });
-        return;
       }
-
-      final updatedTodo = existingTodo.copyWith(
-        title: title,
-        notes: notesController.text.trim(),
-        reminderAt: reminderEnabled ? reminderAt : null,
-        clearReminder: !reminderEnabled,
-      );
-
-      await notifier.updateTodo(updatedTodo);
-    } else {
-      await notifier.addTodo(
-        title: title,
-        notes: notesController.text.trim(),
-        reminderAt: reminderEnabled ? reminderAt : null,
-      );
-    }
-
-    if (mounted) {
-      Navigator.pop(context);
     }
   }
 
@@ -267,7 +280,6 @@ class _TodoFormScreenState extends ConsumerState<TodoFormScreen> {
                 ),
               ),
             ],
-            const AppFooter(),
           ],
         ),
         bottomNavigationBar: SafeArea(

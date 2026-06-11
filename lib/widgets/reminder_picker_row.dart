@@ -7,6 +7,7 @@ import '../providers/settings_provider.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_theme.dart';
 import '../utils/reminder_helpers.dart';
+import '../utils/time_picker_helpers.dart';
 import 'app_card.dart';
 
 enum ReminderPickMode { tomorrow, custom }
@@ -79,12 +80,25 @@ class _ReminderPickerRowState extends ConsumerState<ReminderPickerRow> {
 
   Future<void> _pickCustomReminder(BuildContext context) async {
     final now = DateTime.now();
-    final initialDate = widget.reminderAt ?? now.add(const Duration(hours: 1));
+    final today = DateTime(now.year, now.month, now.day);
+    final isEditingCustomReminder =
+        selectedMode == ReminderPickMode.custom && widget.reminderAt != null;
+
+    final initialDate = isEditingCustomReminder
+        ? DateTime(
+            widget.reminderAt!.year,
+            widget.reminderAt!.month,
+            widget.reminderAt!.day,
+          )
+        : today;
+    final initialTime = isEditingCustomReminder
+        ? TimeOfDay.fromDateTime(widget.reminderAt!)
+        : TimeOfDay.fromDateTime(now.add(const Duration(hours: 1)));
 
     final pickedDate = await showDatePicker(
       context: context,
       initialDate: initialDate,
-      firstDate: now,
+      firstDate: today,
       lastDate: now.add(const Duration(days: 365 * 5)),
     );
 
@@ -92,9 +106,10 @@ class _ReminderPickerRowState extends ConsumerState<ReminderPickerRow> {
       return;
     }
 
-    final pickedTime = await showTimePicker(
+    final pickedTime = await showConfiguredTimePicker(
       context: context,
-      initialTime: TimeOfDay.fromDateTime(widget.reminderAt ?? initialDate),
+      initialTime: initialTime,
+      use24HourFormat: ref.read(settingsProvider).use24HourTimeFormat,
     );
 
     if (pickedTime == null) {
@@ -120,12 +135,15 @@ class _ReminderPickerRowState extends ConsumerState<ReminderPickerRow> {
     final localizations = AppLocalizations.of(context)!;
     final settings = ref.watch(settingsProvider);
     final locale = Localizations.localeOf(context).toString();
-    final dateFormat = DateFormat('MMM d, yyyy · h:mm a', locale);
+    final dateFormat = settings.use24HourTimeFormat
+        ? DateFormat('MMM d, yyyy · HH:mm', locale)
+        : DateFormat('MMM d, yyyy · h:mm a', 'en_US');
     final colorScheme = Theme.of(context).colorScheme;
     final tomorrowTimeLabel = formatReminderClockTime(
       hour: settings.defaultTomorrowReminderHour,
       minute: settings.defaultTomorrowReminderMinute,
       locale: locale,
+      use24HourFormat: settings.use24HourTimeFormat,
     );
     final tomorrowOptionLabel =
         localizations.tomorrowAtDescription(tomorrowTimeLabel);

@@ -1,6 +1,7 @@
 import 'package:hive_flutter/hive_flutter.dart';
 
 import '../models/todo.dart';
+import '../utils/todo_sorting.dart';
 
 const String todoBoxName = 'todos';
 
@@ -17,15 +18,17 @@ class TodoRepository {
       return [];
     }
 
-    return box.values
-        .map((value) => Todo.fromMap(value))
-        .toList()
-      ..sort((first, second) {
-        if (first.isCompleted != second.isCompleted) {
-          return first.isCompleted ? 1 : -1;
-        }
-        return second.updatedAt.compareTo(first.updatedAt);
-      });
+    final todos = <Todo>[];
+    for (final value in box.values) {
+      try {
+        todos.add(Todo.fromMap(value));
+      } catch (_) {
+        continue;
+      }
+    }
+
+    sortTodos(todos);
+    return todos;
   }
 
   Todo? getById(String id) {
@@ -43,7 +46,12 @@ class TodoRepository {
   }
 
   Future<void> save(Todo todo) async {
-    await _box?.put(todo.id, todo.toMap());
+    final box = _box;
+    if (box == null) {
+      throw StateError('TodoRepository is not initialized');
+    }
+
+    await box.put(todo.id, todo.toMap());
   }
 
   Future<void> delete(String id) async {

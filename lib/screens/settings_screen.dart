@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -11,6 +13,7 @@ import '../providers/service_providers.dart';
 import '../providers/todo_provider.dart';
 import '../theme/app_colors.dart';
 import '../utils/reminder_helpers.dart';
+import '../utils/time_picker_helpers.dart';
 import '../widgets/app_background.dart';
 import '../widgets/app_card.dart';
 import '../widgets/app_footer.dart';
@@ -114,6 +117,22 @@ class SettingsScreen extends ConsumerWidget {
               ),
             ),
             SectionHeader(title: localizations.defaultTomorrowReminder),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: AppCard(
+                child: SwitchListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: Text(localizations.use24HourTime),
+                  subtitle: Text(localizations.use24HourTimeDescription),
+                  value: settings.use24HourTimeFormat,
+                  onChanged: (enabled) {
+                    ref
+                        .read(settingsProvider.notifier)
+                        .updateUse24HourTimeFormat(enabled);
+                  },
+                ),
+              ),
+            ),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Column(
@@ -237,6 +256,13 @@ class SettingsScreen extends ConsumerWidget {
                       final notificationService =
                           ref.read(notificationServiceProvider);
                       await notificationService.requestPermissions();
+
+                      final hasExactAlarms =
+                          await notificationService.canScheduleExactAlarms();
+                      if (!hasExactAlarms) {
+                        unawaited(notificationService.openExactAlarmSettings());
+                      }
+
                       if (context.mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
@@ -304,6 +330,7 @@ class SettingsScreen extends ConsumerWidget {
       hour: settings.defaultTomorrowReminderHour,
       minute: settings.defaultTomorrowReminderMinute,
       locale: Localizations.localeOf(context).toString(),
+      use24HourFormat: settings.use24HourTimeFormat,
     );
   }
 
@@ -312,12 +339,13 @@ class SettingsScreen extends ConsumerWidget {
     WidgetRef ref,
     AppSettings settings,
   ) async {
-    final pickedTime = await showTimePicker(
+    final pickedTime = await showConfiguredTimePicker(
       context: context,
       initialTime: TimeOfDay(
         hour: settings.defaultTomorrowReminderHour,
         minute: settings.defaultTomorrowReminderMinute,
       ),
+      use24HourFormat: settings.use24HourTimeFormat,
     );
 
     if (pickedTime == null) {
