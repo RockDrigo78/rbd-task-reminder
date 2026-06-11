@@ -1,0 +1,107 @@
+{
+  "@@locale": "en",
+  "appTitle": "Task reminder",
+  "settings": "Settings",
+  "active": "Active",
+  "completed": "Completed",
+  "noTasksYet": "No tasks yet",
+  "tapToAddFirstTask": "Tap + to add your first task",
+  "editTask": "Edit task",
+  "addTask": "Add task",
+  "save": "Save",
+  "title": "Title",
+  "titleRequired": "Title is required",
+  "notesOptional": "Notes (optional)",
+  "remindMe": "Remind me",
+  "reminderChooseWhen": "Choose when to remind you",
+  "reminderOptionCustom": "Pick date & time",
+  "defaultTomorrowReminder": "Tomorrow reminder time",
+  "defaultTomorrowReminderDescription": "Default time for the quick tomorrow option when adding a reminder.",
+  "pickDateAndTime": "Pick date and time",
+  "pickReminderDateAndTime": "Pick a reminder date and time",
+  "reminderMustBeFuture": "Reminder must be in the future",
+  "deleteTask": "Delete task",
+  "deleteTaskQuestion": "Delete task?",
+  "deleteCannotBeUndone": "This cannot be undone.",
+  "cancel": "Cancel",
+  "delete": "Delete",
+  "removeTaskConfirm": "Remove \"{title}\"?",
+  "@removeTaskConfirm": {
+    "placeholders": {
+      "title": { "type": "String" }
+    }
+  },
+  "postponeOptions": "Postpone options",
+  "postponeOptionsDescription": "These appear when you postpone a reminder.",
+  "addPostponeOption": "Add postpone option",
+  "enableNotifications": "Enable notifications",
+  "notificationPermissionsRequested": "Notification permissions requested",
+  "minutesFromNowDescription": "{count} minutes from now",
+  "@minutesFromNowDescription": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "hoursFromNowDescription": "{count} hour(s) from now",
+  "@hoursFromNowDescription": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "tomorrowAtDescription": "Tomorrow at {time}",
+  "@tomorrowAtDescription": {
+    "placeholders": {
+      "time": { "type": "String" }
+    }
+  },
+  "deleteOptionQuestion": "Delete option?",
+  "removeOptionConfirm": "Remove \"{label}\"?",
+  "@removeOptionConfirm": {
+    "placeholders": {
+      "label": { "type": "String" }
+    }
+  },
+  "addOption": "Add option",
+  "editOption": "Edit option",
+  "label": "Label",
+  "type": "Type",
+  "minutesFromNowType": "Minutes from now",
+  "hoursFromNowType": "Hours from now",
+  "tomorrowAtTimeType": "Tomorrow at time",
+  "minutes": "Minutes",
+  "hours": "Hours",
+  "hourRange": "Hour (0-23)",
+  "minuteRange": "Minute (0-59)",
+  "markDone": "Mark done",
+  "postpone": "Postpone",
+  "postponeFor": "Postpone for",
+  "pickTime": "Pick time…",
+  "reminderAt": "Reminder: {time}",
+  "@reminderAt": {
+    "placeholders": {
+      "time": { "type": "String" }
+    }
+  },
+  "preset15Minutes": "15 minutes",
+  "preset1Hour": "1 hour",
+  "preset3Hours": "3 hours",
+  "presetTomorrowMorning": "Tomorrow 9:00 AM",
+  "language": "Language",
+  "languageSystem": "System default",
+  "languageEnglish": "English",
+  "languageSpanish": "Spanish",
+  "languageGerman": "German",
+  "languageDutch": "Dutch",
+  "languageFrench": "French",
+  "languageItalian": "Italian",
+  "languageRussian": "Russian",
+  "languageUkrainian": "Ukrainian",
+  "languagePortuguese": "Portuguese",
+  "appearance": "Appearance",
+  "themeSystem": "System default",
+  "themeLight": "Light",
+  "themeDark": "Dark",
+  "notificationChannelName": "Task reminders",
+  "notificationChannelDescription": "Notifications for task reminders",
+  "madeByRbdApps": "Made by RBD Apps"
+}
