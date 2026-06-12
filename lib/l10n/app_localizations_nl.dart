@@ -135,6 +135,48 @@ class AppLocalizationsNl extends AppLocalizations {
       'Meldingstoestemming aangevraagd';
 
   @override
+  String get reminderPermissions => 'Herinneringsmachtigingen';
+
+  @override
+  String get notificationsPermissionGranted => 'Meldingen toegestaan';
+
+  @override
+  String get notificationsPermissionMissing => 'Meldingen niet toegestaan';
+
+  @override
+  String get exactAlarmsPermissionGranted =>
+      'Alarmen & herinneringen toegestaan';
+
+  @override
+  String get exactAlarmsPermissionMissing =>
+      'Alarmen & herinneringen niet toegestaan';
+
+  @override
+  String get enableExactAlarms => 'Alarmen & herinneringen toestaan';
+
+  @override
+  String get remindersMayBeLate =>
+      'Herinneringen kunnen vertraagd zijn tot je Alarmen & herinneringen toestaat in Instellingen.';
+
+  @override
+  String get reminderScheduleFailed =>
+      'Herinnering kon niet worden ingepland. Controleer de machtigingen in Instellingen.';
+
+  @override
+  String get batteryOptimizationDisabled =>
+      'Batterijoptimalisatie uitgeschakeld';
+
+  @override
+  String get batteryOptimizationEnabled =>
+      'Batterijoptimalisatie actief (kan herinneringen vertragen)';
+
+  @override
+  String get disableBatteryOptimization => 'Batterijoptimalisatie uitschakelen';
+
+  @override
+  String get openAppBatterySettings => 'App-batterijinstellingen openen';
+
+  @override
   String minutesFromNowDescription(int count) {
     return '$count minuten vanaf nu';
   }

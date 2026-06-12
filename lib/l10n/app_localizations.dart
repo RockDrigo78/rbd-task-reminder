@@ -346,6 +346,78 @@ abstract class AppLocalizations {
   /// **'Notification permissions requested'**
   String get notificationPermissionsRequested;
 
+  /// No description provided for @reminderPermissions.
+  ///
+  /// In en, this message translates to:
+  /// **'Reminder permissions'**
+  String get reminderPermissions;
+
+  /// No description provided for @notificationsPermissionGranted.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications allowed'**
+  String get notificationsPermissionGranted;
+
+  /// No description provided for @notificationsPermissionMissing.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications not allowed'**
+  String get notificationsPermissionMissing;
+
+  /// No description provided for @exactAlarmsPermissionGranted.
+  ///
+  /// In en, this message translates to:
+  /// **'Alarms & reminders allowed'**
+  String get exactAlarmsPermissionGranted;
+
+  /// No description provided for @exactAlarmsPermissionMissing.
+  ///
+  /// In en, this message translates to:
+  /// **'Alarms & reminders not allowed'**
+  String get exactAlarmsPermissionMissing;
+
+  /// No description provided for @enableExactAlarms.
+  ///
+  /// In en, this message translates to:
+  /// **'Allow alarms & reminders'**
+  String get enableExactAlarms;
+
+  /// No description provided for @remindersMayBeLate.
+  ///
+  /// In en, this message translates to:
+  /// **'Reminders may be delayed until you allow Alarms & reminders in Settings.'**
+  String get remindersMayBeLate;
+
+  /// No description provided for @reminderScheduleFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Reminder could not be scheduled. Check permissions in Settings.'**
+  String get reminderScheduleFailed;
+
+  /// No description provided for @batteryOptimizationDisabled.
+  ///
+  /// In en, this message translates to:
+  /// **'Battery optimization disabled'**
+  String get batteryOptimizationDisabled;
+
+  /// No description provided for @batteryOptimizationEnabled.
+  ///
+  /// In en, this message translates to:
+  /// **'Battery optimization active (may delay reminders)'**
+  String get batteryOptimizationEnabled;
+
+  /// No description provided for @disableBatteryOptimization.
+  ///
+  /// In en, this message translates to:
+  /// **'Disable battery optimization'**
+  String get disableBatteryOptimization;
+
+  /// No description provided for @openAppBatterySettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Open app battery settings'**
+  String get openAppBatterySettings;
+
   /// No description provided for @minutesFromNowDescription.
   ///
   /// In en, this message translates to:

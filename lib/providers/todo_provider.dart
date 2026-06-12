@@ -36,16 +36,14 @@ class TodoNotifier extends StateNotifier<List<Todo>> {
   }
 
   Future<void> rescheduleAllReminders() async {
-    for (final todo in state.where((todo) => !todo.isCompleted)) {
-      await _scheduleReminderSafely(todo);
-    }
+    await _scheduler.rescheduleAll(state);
   }
 
   Todo? getById(String id) {
     return _repository.getById(id);
   }
 
-  Future<void> addTodo({
+  Future<bool> addTodo({
     required String title,
     String notes = '',
     DateTime? reminderAt,
@@ -62,21 +60,37 @@ class TodoNotifier extends StateNotifier<List<Todo>> {
 
     await _repository.save(todo);
     loadTodos();
-    await _scheduleReminderSafely(todo);
+
+    if (reminderAt == null) {
+      return true;
+    }
+
+    return _scheduleReminderSafely(todo);
   }
 
-  Future<void> updateTodo(Todo todo) async {
+  Future<bool> updateTodo(Todo todo) async {
     final updatedTodo = todo.copyWith(updatedAt: DateTime.now());
     await _repository.save(updatedTodo);
     loadTodos();
-    await _scheduleReminderSafely(updatedTodo);
+
+    if (updatedTodo.reminderAt == null || updatedTodo.isCompleted) {
+      await _cancelReminderSafely(updatedTodo.id);
+      return true;
+    }
+
+    return _scheduleReminderSafely(updatedTodo);
   }
 
-  Future<void> _scheduleReminderSafely(Todo todo) async {
+  Future<bool> _scheduleReminderSafely(Todo todo) async {
     try {
-      await _scheduler.schedule(todo);
+      final scheduled = await _scheduler.schedule(todo);
+      if (!scheduled) {
+        debugPrint('Reminder was not scheduled for todo ${todo.id}');
+      }
+      return scheduled;
     } catch (error, stackTrace) {
       debugPrint('Failed to schedule reminder: $error\n$stackTrace');
+      return false;
     }
   }
 

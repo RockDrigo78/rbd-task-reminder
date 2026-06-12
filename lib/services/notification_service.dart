@@ -1,12 +1,15 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:timezone/data/latest.dart' as timezone_data;
 import 'package:timezone/timezone.dart' as timezone;
 
+import '../models/reminder_permission_status.dart';
 import '../models/todo.dart';
 
 typedef NotificationTapHandler = void Function(String todoId);
@@ -19,7 +22,7 @@ class NotificationService {
 
   NotificationTapHandler? onNotificationTap;
 
-  static const String channelId = 'task_reminder_channel_v2';
+  static const String channelId = 'task_reminder_channel_v3';
   static const String channelName = 'Task reminders';
   static const String channelDescription = 'Notifications for task reminders';
 
@@ -59,6 +62,14 @@ class NotificationService {
     return launchDetails?.notificationResponse?.payload;
   }
 
+  Future<ReminderPermissionStatus> getReminderPermissionStatus() async {
+    return ReminderPermissionStatus(
+      notificationsEnabled: await areNotificationsEnabled(),
+      exactAlarmsEnabled: await canScheduleExactAlarms(),
+      batteryOptimizationDisabled: await isBatteryOptimizationDisabled(),
+    );
+  }
+
   Future<void> requestPermissions() async {
     final androidPlugin = _plugin.resolvePlatformSpecificImplementation<
         AndroidFlutterLocalNotificationsPlugin>();
@@ -79,10 +90,45 @@ class NotificationService {
     await androidPlugin?.requestExactAlarmsPermission();
   }
 
+  Future<void> openAppSettingsPage() async {
+    await openAppSettings();
+  }
+
+  Future<void> requestBatteryOptimizationExemption() async {
+    if (!Platform.isAndroid) {
+      return;
+    }
+
+    await Permission.ignoreBatteryOptimizations.request();
+  }
+
+  Future<bool> isBatteryOptimizationDisabled() async {
+    if (!Platform.isAndroid) {
+      return true;
+    }
+
+    final status = await Permission.ignoreBatteryOptimizations.status;
+    return status.isGranted;
+  }
+
+  Future<void> prepareReliableScheduling() async {
+    await requestPermissions();
+    if (!await canScheduleExactAlarms()) {
+      await openExactAlarmSettings();
+    }
+    if (!await isBatteryOptimizationDisabled()) {
+      await requestBatteryOptimizationExemption();
+    }
+  }
+
   Future<bool> canScheduleExactAlarms() async {
+    if (!Platform.isAndroid) {
+      return true;
+    }
+
     final androidPlugin = _plugin.resolvePlatformSpecificImplementation<
         AndroidFlutterLocalNotificationsPlugin>();
-    return await androidPlugin?.canScheduleExactNotifications() ?? true;
+    return await androidPlugin?.canScheduleExactNotifications() ?? false;
   }
 
   Future<bool> areNotificationsEnabled() async {
@@ -109,38 +155,76 @@ class NotificationService {
     );
   }
 
-  Future<void> scheduleReminder(
+  Future<bool> scheduleReminder(
     Todo todo, {
     required String notificationTitle,
   }) async {
     final reminderAt = todo.reminderAt;
     if (reminderAt == null || todo.isCompleted) {
-      return;
+      return true;
     }
 
     if (!reminderAt.isAfter(DateTime.now())) {
-      return;
+      return false;
     }
 
-    final scheduledDate = timezone.TZDateTime(
-      timezone.local,
-      reminderAt.year,
-      reminderAt.month,
-      reminderAt.day,
-      reminderAt.hour,
-      reminderAt.minute,
-      reminderAt.second,
-    );
+    await _configureLocalTimeZone();
+
+    final scheduledDate = _localReminderTime(reminderAt);
     final notificationId = _notificationIdForTodo(todo.id);
     final details = _reminderNotificationDetails();
 
-    await _scheduleReminderAt(
+    return _scheduleReminderAt(
       notificationId: notificationId,
       notificationTitle: notificationTitle,
       body: todo.title,
       scheduledDate: scheduledDate,
       details: details,
       payload: todo.id,
+    );
+  }
+
+  Future<void> rescheduleAllReminders(
+    List<Todo> todos, {
+    required String notificationTitle,
+  }) async {
+    for (final todo in todos) {
+      if (todo.isCompleted || todo.reminderAt == null) {
+        continue;
+      }
+
+      if (!todo.reminderAt!.isAfter(DateTime.now())) {
+        continue;
+      }
+
+      try {
+        await cancelReminder(todo.id);
+        final scheduled = await scheduleReminder(
+          todo,
+          notificationTitle: notificationTitle,
+        );
+        if (!scheduled) {
+          debugPrint('Failed to reschedule reminder for todo ${todo.id}');
+        }
+      } catch (error, stackTrace) {
+        debugPrint(
+          'Failed to reschedule reminder for ${todo.id}: $error\n$stackTrace',
+        );
+      }
+    }
+  }
+
+  timezone.TZDateTime _localReminderTime(DateTime reminderAt) {
+    final localReminderAt = reminderAt.isUtc ? reminderAt.toLocal() : reminderAt;
+
+    return timezone.TZDateTime(
+      timezone.local,
+      localReminderAt.year,
+      localReminderAt.month,
+      localReminderAt.day,
+      localReminderAt.hour,
+      localReminderAt.minute,
+      localReminderAt.second,
     );
   }
 
@@ -151,7 +235,7 @@ class NotificationService {
       channelDescription: channelDescription,
       importance: Importance.max,
       priority: Priority.high,
-      category: AndroidNotificationCategory.reminder,
+      category: AndroidNotificationCategory.alarm,
       visibility: NotificationVisibility.public,
       playSound: true,
       enableVibration: true,
@@ -171,7 +255,7 @@ class NotificationService {
     );
   }
 
-  Future<void> _scheduleReminderAt({
+  Future<bool> _scheduleReminderAt({
     required int notificationId,
     required String notificationTitle,
     required String body,
@@ -179,15 +263,42 @@ class NotificationService {
     required NotificationDetails details,
     required String payload,
   }) async {
-    final canUseExactAlarms = await canScheduleExactAlarms();
-    final scheduleModes = canUseExactAlarms
-        ? <AndroidScheduleMode>[
-            AndroidScheduleMode.exactAllowWhileIdle,
-            AndroidScheduleMode.inexactAllowWhileIdle,
-          ]
-        : <AndroidScheduleMode>[
-            AndroidScheduleMode.inexactAllowWhileIdle,
-          ];
+    if (Platform.isAndroid) {
+      return _scheduleAndroidReminder(
+        notificationId: notificationId,
+        notificationTitle: notificationTitle,
+        body: body,
+        scheduledDate: scheduledDate,
+        details: details,
+        payload: payload,
+      );
+    }
+
+    return _scheduleIosReminder(
+      notificationId: notificationId,
+      notificationTitle: notificationTitle,
+      body: body,
+      scheduledDate: scheduledDate,
+      details: details,
+      payload: payload,
+    );
+  }
+
+  Future<bool> _scheduleAndroidReminder({
+    required int notificationId,
+    required String notificationTitle,
+    required String body,
+    required timezone.TZDateTime scheduledDate,
+    required NotificationDetails details,
+    required String payload,
+  }) async {
+    // Community fix for Android 14+/Pixel: alarmClock works when setExact is
+    // ignored. See flutter_local_notifications issue #2185.
+    const scheduleModes = <AndroidScheduleMode>[
+      AndroidScheduleMode.alarmClock,
+      AndroidScheduleMode.exactAllowWhileIdle,
+      AndroidScheduleMode.inexactAllowWhileIdle,
+    ];
 
     PlatformException? lastError;
 
@@ -200,11 +311,13 @@ class NotificationService {
           scheduledDate,
           details,
           androidScheduleMode: scheduleMode,
-          uiLocalNotificationDateInterpretation:
-              UILocalNotificationDateInterpretation.absoluteTime,
           payload: payload,
         );
-        return;
+        debugPrint(
+          'Scheduled reminder $notificationId at $scheduledDate '
+          '(now=${timezone.TZDateTime.now(timezone.local)}) using $scheduleMode',
+        );
+        return true;
       } on PlatformException catch (error) {
         lastError = error;
         debugPrint(
@@ -214,7 +327,34 @@ class NotificationService {
     }
 
     if (lastError != null) {
-      throw lastError;
+      debugPrint('All Android scheduling modes failed: ${lastError.code}');
+    }
+    return false;
+  }
+
+  Future<bool> _scheduleIosReminder({
+    required int notificationId,
+    required String notificationTitle,
+    required String body,
+    required timezone.TZDateTime scheduledDate,
+    required NotificationDetails details,
+    required String payload,
+  }) async {
+    try {
+      await _plugin.zonedSchedule(
+        notificationId,
+        notificationTitle,
+        body,
+        scheduledDate,
+        details,
+        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+        payload: payload,
+      );
+      debugPrint('Scheduled iOS reminder $notificationId at $scheduledDate');
+      return true;
+    } on PlatformException catch (error) {
+      debugPrint('iOS reminder scheduling failed: ${error.code}');
+      return false;
     }
   }
 
@@ -236,6 +376,7 @@ class NotificationService {
       timezone.setLocalLocation(
         timezone.getLocation(timeZoneInfo.identifier),
       );
+      debugPrint('Timezone configured: ${timeZoneInfo.identifier}');
       return;
     } catch (error, stackTrace) {
       debugPrint('Device timezone lookup failed: $error\n$stackTrace');
@@ -247,10 +388,20 @@ class NotificationService {
   void _setLocalTimeZoneFromDeviceOffset() {
     try {
       final offset = DateTime.now().timeZoneOffset;
-      final hours = offset.inHours;
-      final locationName =
-          'Etc/GMT${hours >= 0 ? '-' : '+'}${hours.abs()}';
-      timezone.setLocalLocation(timezone.getLocation(locationName));
+      final totalMinutes = offset.inMinutes;
+      final hours = totalMinutes ~/ 60;
+      final minutes = totalMinutes.abs() % 60;
+
+      if (minutes == 0) {
+        final locationName =
+            'Etc/GMT${hours >= 0 ? '-' : '+'}${hours.abs()}';
+        timezone.setLocalLocation(timezone.getLocation(locationName));
+        debugPrint('Timezone fallback configured: $locationName');
+        return;
+      }
+
+      timezone.setLocalLocation(timezone.UTC);
+      debugPrint('Timezone fallback configured: UTC');
     } catch (error, stackTrace) {
       debugPrint('Timezone offset fallback failed: $error\n$stackTrace');
     }

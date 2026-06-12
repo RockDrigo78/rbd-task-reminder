@@ -27,7 +27,7 @@ class TaskReminderApp extends ConsumerStatefulWidget {
 class _TaskReminderAppState extends ConsumerState<TaskReminderApp>
     with WidgetsBindingObserver {
   Timer? dueReminderTimer;
-  final Set<String> triggeredReminderIds = {};
+  final Set<String> triggeredReminderKeys = {};
 
   @override
   void initState() {
@@ -42,12 +42,8 @@ class _TaskReminderAppState extends ConsumerState<TaskReminderApp>
   Future<void> _bootstrapNotifications() async {
     try {
       final notificationService = ref.read(notificationServiceProvider);
-      await notificationService.requestPermissions();
-
-      final hasExactAlarms = await notificationService.canScheduleExactAlarms();
-      if (!hasExactAlarms) {
-        unawaited(notificationService.openExactAlarmSettings());
-      }
+      await notificationService.prepareReliableScheduling();
+      await ref.read(todosProvider.notifier).rescheduleAllReminders();
 
       final launchTodoId =
           await notificationService.getLaunchNotificationTodoId();
@@ -55,7 +51,7 @@ class _TaskReminderAppState extends ConsumerState<TaskReminderApp>
         ref.read(reminderActionProvider.notifier).show(launchTodoId);
       }
 
-      await ref.read(todosProvider.notifier).rescheduleAllReminders();
+      _checkDueReminders();
     } catch (error, stackTrace) {
       debugPrint('Notification bootstrap failed: $error\n$stackTrace');
     }
@@ -71,8 +67,17 @@ class _TaskReminderAppState extends ConsumerState<TaskReminderApp>
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
-      _checkDueReminders();
+      unawaited(_onAppResumed());
     }
+  }
+
+  Future<void> _onAppResumed() async {
+    try {
+      await ref.read(todosProvider.notifier).rescheduleAllReminders();
+    } catch (error, stackTrace) {
+      debugPrint('Failed to reschedule reminders on resume: $error\n$stackTrace');
+    }
+    _checkDueReminders();
   }
 
   void _startDueReminderChecks() {
@@ -83,6 +88,10 @@ class _TaskReminderAppState extends ConsumerState<TaskReminderApp>
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _checkDueReminders();
     });
+  }
+
+  String _reminderTriggerKey(Todo todo) {
+    return '${todo.id}:${todo.reminderAt?.millisecondsSinceEpoch ?? 0}';
   }
 
   void _checkDueReminders() {
@@ -99,13 +108,13 @@ class _TaskReminderAppState extends ConsumerState<TaskReminderApp>
       }
 
       if (!todo.reminderAt!.isAfter(now)) {
-        if (triggeredReminderIds.contains(todo.id)) {
+        final triggerKey = _reminderTriggerKey(todo);
+        if (triggeredReminderKeys.contains(triggerKey)) {
           continue;
         }
 
-        triggeredReminderIds.add(todo.id);
+        triggeredReminderKeys.add(triggerKey);
         unawaited(_showDueReminderNotification(todo));
-        break;
       }
     }
   }
@@ -142,7 +151,9 @@ class _TaskReminderAppState extends ConsumerState<TaskReminderApp>
         ref: ref,
         todoId: todoId,
       );
-      triggeredReminderIds.remove(todoId);
+      triggeredReminderKeys.removeWhere(
+        (key) => key.startsWith('$todoId:'),
+      );
     });
   }
 

@@ -9,6 +9,7 @@ import '../models/postpone_preset.dart';
 import '../models/app_settings.dart';
 import '../models/theme_preference.dart';
 import '../providers/settings_provider.dart';
+import '../models/reminder_permission_status.dart';
 import '../providers/service_providers.dart';
 import '../providers/todo_provider.dart';
 import '../theme/app_colors.dart';
@@ -239,70 +240,10 @@ class SettingsScreen extends ConsumerWidget {
               ),
             ),
             const SizedBox(height: 24),
+            SectionHeader(title: localizations.reminderPermissions),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  gradient: AppColors.subtleGradient,
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(
-                    color: AppColors.indigo.withValues(alpha: 0.2),
-                  ),
-                ),
-                child: Material(
-                  color: Colors.transparent,
-                  child: InkWell(
-                    onTap: () async {
-                      final notificationService =
-                          ref.read(notificationServiceProvider);
-                      await notificationService.requestPermissions();
-
-                      final hasExactAlarms =
-                          await notificationService.canScheduleExactAlarms();
-                      if (!hasExactAlarms) {
-                        unawaited(notificationService.openExactAlarmSettings());
-                      }
-
-                      if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              localizations.notificationPermissionsRequested,
-                            ),
-                          ),
-                        );
-                      }
-                    },
-                    borderRadius: BorderRadius.circular(20),
-                    child: Padding(
-                      padding: const EdgeInsets.all(18),
-                      child: Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(10),
-                            decoration: BoxDecoration(
-                              gradient: AppColors.primaryGradient,
-                              borderRadius: BorderRadius.circular(14),
-                            ),
-                            child: const Icon(
-                              Icons.notifications_active_rounded,
-                              color: Colors.white,
-                            ),
-                          ),
-                          const SizedBox(width: 14),
-                          Expanded(
-                            child: Text(
-                              localizations.enableNotifications,
-                              style: Theme.of(context).textTheme.titleMedium,
-                            ),
-                          ),
-                          const Icon(Icons.chevron_right_rounded),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ),
+              child: _ReminderPermissionsCard(localizations: localizations),
             ),
             const AppFooter(),
           ],
@@ -602,6 +543,199 @@ class _SettingsOptionTile extends StatelessWidget {
       trailing: isSelected
           ? const Icon(Icons.check_circle_rounded, color: AppColors.indigo)
           : null,
+    );
+  }
+}
+
+class _ReminderPermissionsCard extends ConsumerStatefulWidget {
+  const _ReminderPermissionsCard({required this.localizations});
+
+  final AppLocalizations localizations;
+
+  @override
+  ConsumerState<_ReminderPermissionsCard> createState() =>
+      _ReminderPermissionsCardState();
+}
+
+class _ReminderPermissionsCardState
+    extends ConsumerState<_ReminderPermissionsCard>
+    with WidgetsBindingObserver {
+  late Future<ReminderPermissionStatus> _permissionStatusFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _permissionStatusFuture = _loadPermissionStatus();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      unawaited(_refreshPermissionStatus());
+    }
+  }
+
+  Future<ReminderPermissionStatus> _loadPermissionStatus() {
+    return ref.read(notificationServiceProvider).getReminderPermissionStatus();
+  }
+
+  Future<void> _refreshPermissionStatus() async {
+    setState(() {
+      _permissionStatusFuture = _loadPermissionStatus();
+    });
+    await _permissionStatusFuture;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final localizations = widget.localizations;
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return FutureBuilder<ReminderPermissionStatus>(
+      future: _permissionStatusFuture,
+      builder: (context, snapshot) {
+        final status = snapshot.data;
+
+        return AppCard(
+          child: Column(
+            children: [
+              _PermissionStatusRow(
+                label: status?.notificationsEnabled == true
+                    ? localizations.notificationsPermissionGranted
+                    : localizations.notificationsPermissionMissing,
+                isGranted: status?.notificationsEnabled == true,
+              ),
+              Divider(color: colorScheme.outline),
+              _PermissionStatusRow(
+                label: status?.exactAlarmsEnabled == true
+                    ? localizations.exactAlarmsPermissionGranted
+                    : localizations.exactAlarmsPermissionMissing,
+                isGranted: status?.exactAlarmsEnabled == true,
+              ),
+              Divider(color: colorScheme.outline),
+              _PermissionStatusRow(
+                label: status?.batteryOptimizationDisabled == true
+                    ? localizations.batteryOptimizationDisabled
+                    : localizations.batteryOptimizationEnabled,
+                isGranted: status?.batteryOptimizationDisabled == true,
+              ),
+              if (status != null && !status.isReliable) ...[
+                Divider(color: colorScheme.outline),
+                Padding(
+                  padding: const EdgeInsets.only(top: 4, bottom: 8),
+                  child: Text(
+                    localizations.remindersMayBeLate,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: colorScheme.error,
+                        ),
+                  ),
+                ),
+              ],
+              const SizedBox(height: 8),
+              if (status?.notificationsEnabled != true)
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    onPressed: () async {
+                      await ref
+                          .read(notificationServiceProvider)
+                          .requestPermissions();
+                      await _refreshPermissionStatus();
+                    },
+                    icon: const Icon(Icons.notifications_active_rounded),
+                    label: Text(localizations.enableNotifications),
+                  ),
+                ),
+              if (status?.exactAlarmsEnabled != true) ...[
+                if (status?.notificationsEnabled != true)
+                  const SizedBox(height: 8),
+                SizedBox(
+                  width: double.infinity,
+                  child: FilledButton.icon(
+                    onPressed: () async {
+                      await ref
+                          .read(notificationServiceProvider)
+                          .openExactAlarmSettings();
+                      await _refreshPermissionStatus();
+                    },
+                    icon: const Icon(Icons.alarm_rounded),
+                    label: Text(localizations.enableExactAlarms),
+                  ),
+                ),
+              ],
+              if (status?.batteryOptimizationDisabled != true) ...[
+                const SizedBox(height: 8),
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    onPressed: () async {
+                      await ref
+                          .read(notificationServiceProvider)
+                          .requestBatteryOptimizationExemption();
+                      await _refreshPermissionStatus();
+                    },
+                    icon: const Icon(Icons.battery_charging_full_rounded),
+                    label: Text(localizations.disableBatteryOptimization),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                SizedBox(
+                  width: double.infinity,
+                  child: TextButton.icon(
+                    onPressed: () async {
+                      await ref
+                          .read(notificationServiceProvider)
+                          .openAppSettingsPage();
+                      await _refreshPermissionStatus();
+                    },
+                    icon: const Icon(Icons.settings_rounded),
+                    label: Text(localizations.openAppBatterySettings),
+                  ),
+                ),
+              ],
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _PermissionStatusRow extends StatelessWidget {
+  const _PermissionStatusRow({
+    required this.label,
+    required this.isGranted,
+  });
+
+  final String label;
+  final bool isGranted;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        children: [
+          Icon(
+            isGranted ? Icons.check_circle_rounded : Icons.error_outline_rounded,
+            color: isGranted ? AppColors.indigo : Theme.of(context).colorScheme.error,
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              label,
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

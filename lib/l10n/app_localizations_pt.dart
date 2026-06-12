@@ -134,6 +134,46 @@ class AppLocalizationsPt extends AppLocalizations {
       'Permissões de notificação solicitadas';
 
   @override
+  String get reminderPermissions => 'Permissões de lembrete';
+
+  @override
+  String get notificationsPermissionGranted => 'Notificações permitidas';
+
+  @override
+  String get notificationsPermissionMissing => 'Notificações não permitidas';
+
+  @override
+  String get exactAlarmsPermissionGranted => 'Alarmes e lembretes permitidos';
+
+  @override
+  String get exactAlarmsPermissionMissing =>
+      'Alarmes e lembretes não permitidos';
+
+  @override
+  String get enableExactAlarms => 'Permitir alarmes e lembretes';
+
+  @override
+  String get remindersMayBeLate =>
+      'Os lembretes podem atrasar-se até permitir Alarmes e lembretes nas Definições.';
+
+  @override
+  String get reminderScheduleFailed =>
+      'Não foi possível agendar o lembrete. Verifique as permissões em Definições.';
+
+  @override
+  String get batteryOptimizationDisabled => 'Otimização de bateria desativada';
+
+  @override
+  String get batteryOptimizationEnabled =>
+      'Otimização de bateria ativa (pode atrasar lembretes)';
+
+  @override
+  String get disableBatteryOptimization => 'Desativar otimização de bateria';
+
+  @override
+  String get openAppBatterySettings => 'Abrir definições de bateria da app';
+
+  @override
   String minutesFromNowDescription(int count) {
     return '$count minutos a partir de agora';
   }

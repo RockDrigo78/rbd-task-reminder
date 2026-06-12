@@ -83,10 +83,11 @@ class _TodoFormScreenState extends ConsumerState<TodoFormScreen> {
     try {
       if (reminderEnabled) {
         final notificationService = ref.read(notificationServiceProvider);
-        await notificationService.requestPermissions();
+        await notificationService.prepareReliableScheduling();
       }
 
       final notifier = ref.read(todosProvider.notifier);
+      var reminderScheduled = true;
 
       if (isEditing) {
         final existingTodo = notifier.getById(widget.todoId!);
@@ -101,9 +102,9 @@ class _TodoFormScreenState extends ConsumerState<TodoFormScreen> {
           clearReminder: !reminderEnabled,
         );
 
-        await notifier.updateTodo(updatedTodo);
+        reminderScheduled = await notifier.updateTodo(updatedTodo);
       } else {
-        await notifier.addTodo(
+        reminderScheduled = await notifier.addTodo(
           title: title,
           notes: notesController.text.trim(),
           reminderAt: reminderEnabled ? reminderAt : null,
@@ -111,8 +112,30 @@ class _TodoFormScreenState extends ConsumerState<TodoFormScreen> {
       }
 
       if (mounted) {
+        final messenger = ScaffoldMessenger.of(context);
         Navigator.pop(context);
         didPop = true;
+
+        if (reminderEnabled && !reminderScheduled) {
+          messenger.showSnackBar(
+            SnackBar(
+              content: Text(localizations.reminderScheduleFailed),
+              duration: const Duration(seconds: 5),
+            ),
+          );
+        } else if (reminderEnabled) {
+          final permissionStatus = await ref
+              .read(notificationServiceProvider)
+              .getReminderPermissionStatus();
+          if (!permissionStatus.isReliable) {
+            messenger.showSnackBar(
+              SnackBar(
+                content: Text(localizations.remindersMayBeLate),
+                duration: const Duration(seconds: 5),
+              ),
+            );
+          }
+        }
       }
     } catch (_) {
       if (mounted) {
@@ -196,6 +219,7 @@ class _TodoFormScreenState extends ConsumerState<TodoFormScreen> {
                 labelText: localizations.title,
                 prefixIcon: const Icon(Icons.edit_note_rounded),
               ),
+              textCapitalization: TextCapitalization.sentences,
               textInputAction: TextInputAction.next,
             ),
             const SizedBox(height: 16),
@@ -206,6 +230,7 @@ class _TodoFormScreenState extends ConsumerState<TodoFormScreen> {
                 prefixIcon: const Icon(Icons.notes_rounded),
                 alignLabelWithHint: true,
               ),
+              textCapitalization: TextCapitalization.sentences,
               minLines: 3,
               maxLines: 5,
             ),

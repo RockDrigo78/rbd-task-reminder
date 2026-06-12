@@ -132,6 +132,48 @@ class AppLocalizationsUk extends AppLocalizations {
       'Запитано дозволи на сповіщення';
 
   @override
+  String get reminderPermissions => 'Дозволи для нагадувань';
+
+  @override
+  String get notificationsPermissionGranted => 'Сповіщення дозволено';
+
+  @override
+  String get notificationsPermissionMissing => 'Сповіщення не дозволено';
+
+  @override
+  String get exactAlarmsPermissionGranted =>
+      'Будильники та нагадування дозволено';
+
+  @override
+  String get exactAlarmsPermissionMissing =>
+      'Будильники та нагадування не дозволено';
+
+  @override
+  String get enableExactAlarms => 'Дозволити будильники та нагадування';
+
+  @override
+  String get remindersMayBeLate =>
+      'Нагадування можуть запізнюватися, доки ви не дозволите «Будильники та нагадування» в налаштуваннях.';
+
+  @override
+  String get reminderScheduleFailed =>
+      'Не вдалося запланувати нагадування. Перевірте дозволи в налаштуваннях.';
+
+  @override
+  String get batteryOptimizationDisabled => 'Оптимізацію батареї вимкнено';
+
+  @override
+  String get batteryOptimizationEnabled =>
+      'Оптимізація батареї активна (може затримувати нагадування)';
+
+  @override
+  String get disableBatteryOptimization => 'Вимкнути оптимізацію батареї';
+
+  @override
+  String get openAppBatterySettings =>
+      'Відкрити налаштування батареї застосунку';
+
+  @override
   String minutesFromNowDescription(int count) {
     return '$count хв. від зараз';
   }

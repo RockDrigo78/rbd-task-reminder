@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
+import 'l10n/l10n_helpers.dart';
 import 'app.dart';
 import 'providers/reminder_action_provider.dart';
 import 'providers/service_providers.dart';
@@ -38,6 +39,17 @@ Future<void> main() async {
           },
         )
         .timeout(const Duration(seconds: 10));
+
+    await notificationService.requestPermissions();
+
+    final settings = settingsRepository.getSettings();
+    final notificationTitle = localizationsForLanguageCode(
+      settings.languageCode,
+    ).appTitle;
+    await notificationService.rescheduleAllReminders(
+      todoRepository.getAll(),
+      notificationTitle: notificationTitle,
+    );
   } catch (error, stackTrace) {
     debugPrint('Notification init failed: $error\n$stackTrace');
   }

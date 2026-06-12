@@ -133,6 +133,47 @@ class AppLocalizationsIt extends AppLocalizations {
       'Permessi di notifica richiesti';
 
   @override
+  String get reminderPermissions => 'Permessi promemoria';
+
+  @override
+  String get notificationsPermissionGranted => 'Notifiche consentite';
+
+  @override
+  String get notificationsPermissionMissing => 'Notifiche non consentite';
+
+  @override
+  String get exactAlarmsPermissionGranted => 'Allarmi e promemoria consentiti';
+
+  @override
+  String get exactAlarmsPermissionMissing =>
+      'Allarmi e promemoria non consentiti';
+
+  @override
+  String get enableExactAlarms => 'Consenti allarmi e promemoria';
+
+  @override
+  String get remindersMayBeLate =>
+      'I promemoria possono essere in ritardo finché non consenti Allarmi e promemoria nelle impostazioni.';
+
+  @override
+  String get reminderScheduleFailed =>
+      'Impossibile programmare il promemoria. Controlla i permessi in Impostazioni.';
+
+  @override
+  String get batteryOptimizationDisabled =>
+      'Ottimizzazione batteria disattivata';
+
+  @override
+  String get batteryOptimizationEnabled =>
+      'Ottimizzazione batteria attiva (può ritardare i promemoria)';
+
+  @override
+  String get disableBatteryOptimization => 'Disattiva ottimizzazione batteria';
+
+  @override
+  String get openAppBatterySettings => 'Apri impostazioni batteria app';
+
+  @override
   String minutesFromNowDescription(int count) {
     return '$count minuti da adesso';
   }

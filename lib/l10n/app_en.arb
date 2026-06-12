@@ -44,6 +44,18 @@
   "addPostponeOption": "Add postpone option",
   "enableNotifications": "Enable notifications",
   "notificationPermissionsRequested": "Notification permissions requested",
+  "reminderPermissions": "Reminder permissions",
+  "notificationsPermissionGranted": "Notifications allowed",
+  "notificationsPermissionMissing": "Notifications not allowed",
+  "exactAlarmsPermissionGranted": "Alarms & reminders allowed",
+  "exactAlarmsPermissionMissing": "Alarms & reminders not allowed",
+  "enableExactAlarms": "Allow alarms & reminders",
+  "remindersMayBeLate": "Reminders may be delayed until you allow Alarms & reminders in Settings.",
+  "reminderScheduleFailed": "Reminder could not be scheduled. Check permissions in Settings.",
+  "batteryOptimizationDisabled": "Battery optimization disabled",
+  "batteryOptimizationEnabled": "Battery optimization active (may delay reminders)",
+  "disableBatteryOptimization": "Disable battery optimization",
+  "openAppBatterySettings": "Open app battery settings",
   "minutesFromNowDescription": "{count} minutes from now",
   "@minutesFromNowDescription": {
     "placeholders": {
